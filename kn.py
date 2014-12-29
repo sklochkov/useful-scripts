@@ -1,5 +1,6 @@
 import copy
 import sys
+import cProfile
 
 boardsize=6
 _kmoves = ((2,1), (1,2), (-1,2), (-2,1), (-2,-1), (-1,-2), (1,-2), (2,-1)) 
@@ -29,13 +30,23 @@ def knightmoves(board, P, boardsize=boardsize):
                      and not board[(x,y)] )
     return kmoves
  
-def accessibility(board, P, boardsize=boardsize):
+def _accessibility(board, P, boardsize=boardsize):
     access = []
     brd = copy.deepcopy(board)
     for pos in knightmoves(board, P, boardsize=boardsize):
         brd[pos] = -1
         access.append( (len(knightmoves(brd, pos, boardsize=boardsize)), pos) )
         brd[pos] = 0
+    return access
+
+def accessibility(board, P, boardsize=boardsize):
+    access = []
+    #brd = copy.deepcopy(board)
+    for pos in knightmoves(board, P, boardsize=boardsize):
+        tmp = board[pos]
+        board[pos] = -1
+        access.append( (len(knightmoves(board, pos, boardsize=boardsize)), pos) )
+        board[pos] = tmp
     return access
 
 def rollback(board, move, boardsize):
@@ -83,10 +94,17 @@ def knights_tour(start, boardsize=boardsize):
             nxt = 1
     return board
  
-if __name__ == '__main__':
+
+def main():
     boardsize = int(sys.argv[1])
     start = sys.argv[2]
     board = knights_tour(start, boardsize)
     print(boardstring(board, boardsize=boardsize))
     sys.exit(0)
 
+
+if __name__ == '__main__':
+    if len(sys.argv) > 3 and sys.argv[3] == "profile":
+        cProfile.run('main()')
+    else:
+        main()
