@@ -1,6 +1,7 @@
 import copy
 import sys
 import cProfile
+import time
 
 boardsize=6
 _kmoves = ((2,1), (1,2), (-1,2), (-2,1), (-2,-1), (-1,-2), (1,-2), (2,-1)) 
@@ -68,6 +69,8 @@ def knights_tour(start, boardsize=boardsize):
     move += 1
     nxt = 0
     min_rollback_move = -1
+    step = 1
+    rb = 0
     while move <= len(board):
         a = accessibility(board, P, boardsize)
         if len(a) - 1 < nxt:
@@ -81,16 +84,30 @@ def knights_tour(start, boardsize=boardsize):
                 print ("Fine on move %s, next %s" % (move - 1, nxt))
             nxt = 0
             continue
-        if nxt < len(a):
+        if nxt < len(a) - 1:
             board, P = rollback(board, move, boardsize)
             nxt += 1
         else:
             if min_rollback_move < 0:
                 min_rollback_move = move - 1
+            rb += 1
             delta = move - min_rollback_move
             board, P = rollback(board, move - delta, boardsize)
             move = move - delta
-            min_rollback_move = move - 1
+            step = int(move/20)
+            if boardsize < 100:
+                step = 1
+            elif move > 200 and move < 5000:
+                step = 2
+            elif move < 30000:
+                step = 5 + int(rb / 10)
+            elif move < 100000:
+                step = int(rb/10 + 1500)
+            else:
+                step = int(move/20)
+            #step = size < 200 ? 2 : size < 500 ? 3 : int(move/10)
+            #min_rollback_move = min_rollback_move - int(move/10)
+            min_rollback_move = min_rollback_move - step
             nxt = 1
     return board
  
@@ -100,11 +117,14 @@ def main():
     start = sys.argv[2]
     board = knights_tour(start, boardsize)
     print(boardstring(board, boardsize=boardsize))
-    sys.exit(0)
 
 
 if __name__ == '__main__':
     if len(sys.argv) > 3 and sys.argv[3] == "profile":
         cProfile.run('main()')
     else:
+        a = time.time()
         main()
+        b = time.time()
+        diff = b - a
+        sys.stderr.write("%s\n" % str(diff))
