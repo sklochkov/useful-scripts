@@ -45,7 +45,7 @@ def get_stack_traces(log, app, exclude=None):
 				found = 0
 				if exclude != None:
 					for pattern in exclude:
-						if re.search(pattern, line):
+						if re.search(pattern, line) or re.search(pattern, prev_line):
 							found = 1
 							break
 				if found == 0:
